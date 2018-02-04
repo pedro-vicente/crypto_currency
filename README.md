@@ -29,10 +29,16 @@ Usage
 
 where CODE is a coin code in list coin_list.json and END id an end date, format as YYYY-MM-DD
 
-## Example
+Example
+------------
 
 <pre>
 ./http_coin -k KEY -s SECRET -c BTC -e 2018-01-01
 </pre>
 
 
+Testimonials
+------------
+> Really cool, good work!
+
+Bastiaan Grutters, author of http://www.cryptocurrencychart.com
