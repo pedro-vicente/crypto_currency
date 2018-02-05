@@ -4,11 +4,16 @@ C++ HTTP client for
 
 http://www.cryptocurrencychart.com/api/methods
 
-
 Dependencies
 -----
+
+cmake and OpenSSL (included for Windows build)
+
 <pre>
 sudo apt-get install cmake
+
+sudo apt install openssl
+
 </pre>
 
 Building
@@ -24,7 +29,7 @@ This uses CMakeLists.txt at root and builds in folder "build"
 Usage
 ------------
 <pre>
-./http_coin -k KEY -s SECRET -c CODE -e END
+./https_coin -k KEY -s SECRET -c CODE -e END
 </pre>
 
 where CODE is a coin code in list coin_list.json and END id an end date, format as YYYY-MM-DD
@@ -33,7 +38,7 @@ Example
 ------------
 
 <pre>
-./http_coin -k KEY -s SECRET -c BTC -e 2018-01-01
+./https_coin -k KEY -s SECRET -c BTC -e 2018-01-01
 </pre>
 
 
