@@ -225,6 +225,34 @@ int get_coin(const std::string &coin_code, const std::string &date_end, bool ver
 
   ssl.close_socket();
 
+  std::string fname;
+  fname += "response.txt";
+
+  /////////////////////////////////////////////////////////////////////////////////////////////////////
+  //read from file (already without HTTP headers)
+  /////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  std::ifstream ifs(fname, std::ios::binary);
+  std::stringstream buf;
+  buf << ifs.rdbuf();
+  std::string str_response(buf.str());
+  std::string str_json;
+
+  //some responses include extra characters before, in the middle of after JSON
+  //("408b\r\n")
+  //detect valid JSON 
+  size_t pos = 0;
+  while (true)
+  {
+    pos = str_response.find("\r\n", pos);
+    std::cout << pos << "\n";
+    if (std::string::npos == pos)
+    {
+      break;
+    }
+    pos++;
+  }
+
 
   return 0;
 }
