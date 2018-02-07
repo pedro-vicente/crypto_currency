@@ -18,6 +18,7 @@ std::string date_end;
 std::string get_header(const std::string &api_call);
 int get_coin(const std::string &coin_code, const std::string &date_end, bool verbose);
 int get_all(const std::string &date_end, bool verbose);
+std::string parse_response(const std::string &file_name);
 currency_t curr;
 
 /////////////////////////////////////////////////////////////////////////////////////////////////////
@@ -236,7 +237,6 @@ int get_coin(const std::string &coin_code, const std::string &date_end, bool ver
   std::stringstream buf;
   buf << ifs.rdbuf();
   std::string str_response(buf.str());
-  std::string str_json;
 
   //some responses include extra characters before, in the middle of after JSON
   //("408b\r\n")
@@ -253,6 +253,46 @@ int get_coin(const std::string &coin_code, const std::string &date_end, bool ver
     pos++;
   }
 
+  std::string str_json = parse_response(fname);
+
+  fname = coin_code;
+  fname += ".json";
+  std::ofstream ofs(fname, std::ios::out | std::ios::binary);
+  ofs.write(str_json.c_str(), str_json.size());
+  ofs.close();
+
+  std::string err("{\"error\":true,\"exception\":\"Monthly request limit reached.\"}");
+  if (str_json.compare(err) == 0)
+  {
+    std::cout << err.c_str() << "\n";
+    exit(0);
+  }
+
+  curr.get_history(&str_json[0]);
+  coin_history_t hist = curr.m_coin_history.back();
+  size_t size_hist = hist.m_history.size();
+  std::cout << size_hist << " elements...";
+
+  if (size_hist == 0)
+  {
+    std::cout << std::endl;
+    return 0;
+  }
+
+  /////////////////////////////////////////////////////////////////////////////////////////////////////
+  //save history
+  /////////////////////////////////////////////////////////////////////////////////////////////////////
+
+  fname = hist.m_code;
+  fname += ".csv";
+  FILE *stream = fopen(fname.c_str(), "w");
+  for (size_t idx_hist = 0; idx_hist < size_hist; idx_hist++)
+  {
+    fprintf(stream, "%s,", hist.m_history.at(idx_hist).m_date.c_str());
+    fprintf(stream, "%s\n", hist.m_history.at(idx_hist).m_price.c_str());
+  }
+  fclose(stream);
+  std::cout << "saved " << fname << std::endl;
 
   return 0;
 }
@@ -277,4 +317,62 @@ int get_all(const std::string &date_end, bool verbose)
   }
 
   return 0;
+}
+
+
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+//parse_response
+//generate JSON
+/////////////////////////////////////////////////////////////////////////////////////////////////////
+
+std::string parse_response(const std::string &file_name)
+{
+  int json_mode = 0;
+  std::string json;
+  std::ifstream ifs(file_name, std::ios::binary);
+  char c;
+  int nbr_nlines = 0;
+  while (ifs.get(c))
+  {
+    switch (c)
+    {
+    case '{':
+      json_mode = 1;
+      json.push_back(c);
+      break;
+
+      /////////////////////////////////////////////////////////////////////////////////////////////////////
+      //line end detected
+      /////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    case '\n':
+      json_mode = 0;
+      nbr_nlines++;
+      break;
+    case '\r':
+      json_mode = 0;
+      nbr_nlines++;
+      break;
+
+      /////////////////////////////////////////////////////////////////////////////////////////////////////
+      //default, add character to column
+      /////////////////////////////////////////////////////////////////////////////////////////////////////
+
+    default:
+      if (nbr_nlines == 6)
+      {
+        json_mode = 1;
+        nbr_nlines = 0;
+      }
+      if (json_mode)
+      {
+        json.push_back(c);
+      }
+      break;
+    }
+  }
+
+
+  ifs.close();
+  return json;
 }
