@@ -32,7 +32,7 @@ Usage
 ./https_coin -k KEY -s SECRET -c CODE -e END
 </pre>
 
-where CODE is a coin code in list coin_list.json and END id an end date, format as YYYY-MM-DD
+where CODE is a coin code in list coin_list.json and END is an end date, format as YYYY-MM-DD
 
 Example
 ------------
